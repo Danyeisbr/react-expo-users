@@ -1,8 +1,7 @@
 import { useThemeStore } from "@store/themeStore";
 import styled from "styled-components/native";
-import { useEffect, useRef } from "react";
-import { Animated } from "react-native";
 import type { User } from "../types";
+import { memo } from "react";
 
 const Container = styled.Pressable<{ isDark: boolean }>`
   flex-direction: row;
@@ -49,38 +48,38 @@ type Props = {
   onPress?: () => void;
 };
 
-export default function UserCard({ user, onPress }: Props) {
-  const fade = useRef(new Animated.Value(0)).current;
+function UserCard({ user, onPress }: Props) {
   const effective = useThemeStore((s) => s.effective);
   const isDark = effective === "dark";
-
-  useEffect(() => {
-    Animated.timing(fade, {
-      toValue: 1,
-      duration: 220,
-      useNativeDriver: true,
-    }).start();
-  }, [fade]);
-
   const avatarUri = `https://picsum.photos/seed/${user.id}/200`;
 
   return (
-    <Animated.View style={{ opacity: fade }}>
-      <Container onPress={onPress} isDark={isDark}>
-        <Avatar
-          source={{ uri: avatarUri }}
-          accessibilityLabel={`${user.name} avatar`}
-        />
-        <Content>
-          <Name isDark={isDark} numberOfLines={1}>
-            {user.name}
-          </Name>
-          <Email isDark={isDark} numberOfLines={1}>
-            {user.email}
-          </Email>
-        </Content>
-        <Chevron isDark={isDark}>›</Chevron>
-      </Container>
-    </Animated.View>
+    <Container
+      onPress={onPress}
+      isDark={isDark}
+      style={{
+        shadowColor: isDark ? "#000" : "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        shadowOpacity: 0.1,
+        elevation: 3,
+      }}
+    >
+      <Avatar
+        source={{ uri: avatarUri }}
+        accessibilityLabel={`${user.name} avatar`}
+      />
+      <Content>
+        <Name isDark={isDark} numberOfLines={1}>
+          {user.name}
+        </Name>
+        <Email isDark={isDark} numberOfLines={1}>
+          {user.email}
+        </Email>
+      </Content>
+      <Chevron isDark={isDark}>›</Chevron>
+    </Container>
   );
 }
+
+export default memo(UserCard);

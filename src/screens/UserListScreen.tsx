@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@nav/RootNavigator";
 import { useNavigation } from "@react-navigation/native";
+import SkeletonLoader from "@components/SkeletonLoader";
 import RetryMessage from "@components/RetryMessage";
 import { useThemeStore } from "@store/themeStore";
 import { useUserStore } from "@store/userStore";
@@ -91,12 +92,18 @@ export default function UserListScreen({}: Props) {
   const {
     status,
     error,
+    errorCode,
+    retryCount,
     init,
     refresh,
+    retry,
+    clearCache,
     visibleUsers,
     loadMore,
     query,
     setQuery,
+    hasMore,
+    isLoadingMore,
   } = useUserStore();
   const { mode, effective, setMode } = useThemeStore();
 
@@ -105,39 +112,75 @@ export default function UserListScreen({}: Props) {
   }, [init]);
 
   const data = visibleUsers();
+  const isDark = effective === "dark";
 
   const onEndReached = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    loadMore();
-  }, [loadMore]);
+    if (hasMore && !isLoadingMore) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      loadMore();
+    }
+  }, [loadMore, hasMore, isLoadingMore]);
 
-  const renderItem = ({ item }: { item: User }) => (
-    <UserCard
-      user={item}
-      onPress={() => {
-        // Subtle feedback on press is handled by UserCard; navigation transition is handled by stack
-        // Show spinner in next screen if needed (we pass id and fetch details from store list)
-        // Since all fields are already present, we only show loader while pushing screen.
-        // Navigation includes default platform transition.
-        // For extra UX, you could add shared element, but not required here.
-        // @ts-ignore
-        navigation.navigate("UserDetail", { id: item.id });
-      }}
-    />
+  const renderItem = useCallback(
+    ({ item }: { item: User }) => (
+      <UserCard
+        user={item}
+        onPress={() => {
+          // @ts-ignore
+          navigation.navigate("UserDetail", { id: item.id });
+        }}
+      />
+    ),
+    [navigation]
   );
+
+  const renderFooter = useCallback(() => {
+    if (isLoadingMore) {
+      return (
+        <FooterContainer>
+          <ActivityIndicator size="small" />
+          <FooterText isDark={isDark}>Loading more users...</FooterText>
+        </FooterContainer>
+      );
+    }
+
+    if (!hasMore && data.length >= 100) {
+      return (
+        <FooterContainer>
+          <FooterText isDark={isDark}>
+            You've reached the maximum of 100 users
+          </FooterText>
+        </FooterContainer>
+      );
+    }
+
+    return null;
+  }, [isLoadingMore, hasMore, data.length, isDark]);
 
   const toggleTheme = () => {
     if (mode === "system") setMode(effective === "dark" ? "light" : "dark");
     else setMode(mode === "dark" ? "light" : "dark");
   };
 
+  const handleClearCache = async () => {
+    await clearCache();
+    init();
+  };
+
   const themeLabel = mode === "system" ? `System (${effective})` : mode;
-  const isDark = effective === "dark";
 
   return (
     <Container isDark={isDark}>
       <Header>
         <Title isDark={isDark}>Users</Title>
+        <ThemeButton
+          onPress={handleClearCache}
+          accessibilityRole="button"
+          isDark={isDark}
+          style={{ marginRight: 8 }}
+        >
+          <ThemeButtonText isDark={isDark}>Clear Cache</ThemeButtonText>
+        </ThemeButton>
         <ThemeButton
           onPress={toggleTheme}
           accessibilityRole="button"
@@ -150,28 +193,37 @@ export default function UserListScreen({}: Props) {
       <SearchBar value={query} onChangeText={setQuery} />
 
       {status === "loading" && data.length === 0 ? (
-        <LoadingContainer>
-          <ActivityIndicator />
-          <LoadingText isDark={isDark}>Loading users...</LoadingText>
-        </LoadingContainer>
+        <>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <SkeletonLoader key={index} type="card" isDark={isDark} />
+          ))}
+        </>
       ) : status === "error" ? (
-        <RetryMessage message={error ?? "Failed to load"} onRetry={refresh} />
+        <RetryMessage
+          message={error ?? "Failed to load"}
+          errorCode={errorCode}
+          retryCount={retryCount}
+          onRetry={retry}
+        />
       ) : (
         <FlatList
           data={data}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
           renderItem={renderItem}
           onEndReachedThreshold={0.4}
           onEndReached={onEndReached}
           contentContainerStyle={{ paddingBottom: 24 }}
-          ListFooterComponent={
-            data.length > 0 && data.length < 100 ? (
-              <FooterContainer>
-                <ActivityIndicator />
-                <FooterText isDark={isDark}>Loading more...</FooterText>
-              </FooterContainer>
-            ) : null
-          }
+          ListFooterComponent={renderFooter}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          initialNumToRender={10}
+          updateCellsBatchingPeriod={50}
+          getItemLayout={(data, index) => ({
+            length: 88,
+            offset: 88 * index,
+            index,
+          })}
           ListEmptyComponent={
             <EmptyContainer>
               <EmptyText isDark={isDark}>No results.</EmptyText>

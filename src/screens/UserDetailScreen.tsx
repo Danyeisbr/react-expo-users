@@ -1,9 +1,10 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@nav/RootNavigator";
+import SkeletonLoader from "@components/SkeletonLoader";
 import { useThemeStore } from "@store/themeStore";
-import { ActivityIndicator } from "react-native";
 import { useUserStore } from "@store/userStore";
 import styled from "styled-components/native";
+import { useEffect, useState } from "react";
 
 const LoadingContainer = styled.View<{ isDark: boolean }>`
   flex: 1;
@@ -73,13 +74,22 @@ export default function UserDetailScreen({ route }: Props) {
   const user = useUserStore((s) => s.users.find((u) => u.id === id));
   const effective = useThemeStore((s) => s.effective);
   const isDark = effective === "dark";
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!user) {
+  useEffect(() => {
+    // Simular delay de carga para mostrar skeleton loader
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!user || isLoading) {
     return (
-      <LoadingContainer isDark={isDark}>
-        <ActivityIndicator />
-        <LoadingText isDark={isDark}>Loading details...</LoadingText>
-      </LoadingContainer>
+      <ScrollContainer isDark={isDark}>
+        <SkeletonLoader type="detail" isDark={isDark} />
+      </ScrollContainer>
     );
   }
 
