@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "react-expo-users",
+    "slug": "react-expo-users",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#FFFFFF" } }
+  }
+}
+
