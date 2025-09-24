@@ -1,5 +1,4 @@
 import { Appearance, ColorSchemeName } from "react-native";
-import { NativeWindStyleSheet } from "nativewind";
 import { create } from "zustand";
 
 type ThemeMode = "system" | "light" | "dark";
@@ -26,14 +25,12 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   effective: getEffective("system", Appearance.getColorScheme()),
   setMode: (mode) => {
     set({ mode, effective: getEffective(mode, get().system) });
-    NativeWindStyleSheet.setColorScheme(get().effective);
   },
   _updateEffective: () => {
     const { mode } = get();
     const system = Appearance.getColorScheme();
     const effective = getEffective(mode, system);
     set({ system, effective });
-    NativeWindStyleSheet.setColorScheme(effective);
   },
 }));
 

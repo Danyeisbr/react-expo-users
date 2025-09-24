@@ -1,6 +1,20 @@
 import { useThemeStore } from "@store/themeStore";
+import styled from "styled-components/native";
 import { memo } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+
+const Container = styled.View`
+  padding-horizontal: 16px;
+  padding-vertical: 8px;
+`;
+
+const Input = styled.TextInput<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? "#1f2937" : "#f3f4f6")};
+  color: ${(props) => (props.isDark ? "#f3f4f6" : "#111827")};
+  border-radius: 12px;
+  padding-horizontal: 16px;
+  padding-vertical: 12px;
+  font-size: 16px;
+`;
 
 type Props = {
   value: string;
@@ -10,33 +24,19 @@ type Props = {
 
 const SearchBar = memo(({ value, onChangeText, placeholder }: Props) => {
   const effective = useThemeStore((s) => s.effective);
-
-  const styles = StyleSheet.create({
-    container: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
-    input: {
-      backgroundColor: effective === "dark" ? "#1f2937" : "#f3f4f6",
-      color: effective === "dark" ? "#f3f4f6" : "#111827",
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      fontSize: 16,
-    },
-  });
+  const isDark = effective === "dark";
 
   return (
-    <View style={styles.container}>
-      <TextInput
+    <Container>
+      <Input
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder ?? "Search by name or email"}
-        placeholderTextColor={effective === "dark" ? "#9ca3af" : "#6b7280"}
+        placeholderTextColor={isDark ? "#9ca3af" : "#6b7280"}
         accessibilityLabel="search-input"
-        style={styles.input}
+        isDark={isDark}
       />
-    </View>
+    </Container>
   );
 });
 export default SearchBar;

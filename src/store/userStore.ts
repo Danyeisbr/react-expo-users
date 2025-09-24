@@ -1,7 +1,7 @@
-import { fetchUsers } from "@services/api";
 import { getCache, setCache } from "@utils/cache";
-import { create } from "zustand";
+import { fetchUsers } from "@services/api";
 import type { User } from "../types";
+import { create } from "zustand";
 
 type Status = "idle" | "loading" | "success" | "error";
 

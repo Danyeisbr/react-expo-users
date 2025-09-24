@@ -1,12 +1,5 @@
 import { useThemeStore } from "../themeStore";
 
-// Mock NativeWindStyleSheet
-jest.mock("nativewind", () => ({
-  NativeWindStyleSheet: {
-    setColorScheme: jest.fn(),
-  },
-}));
-
 // Mock Appearance
 jest.mock("react-native", () => ({
   Appearance: {

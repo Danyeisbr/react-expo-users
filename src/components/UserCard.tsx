@@ -1,14 +1,48 @@
 import { useThemeStore } from "@store/themeStore";
-import type { User } from "../types";
+import styled from "styled-components/native";
 import { useEffect, useRef } from "react";
-import {
-  Animated,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated } from "react-native";
+import type { User } from "../types";
+
+const Container = styled.Pressable<{ isDark: boolean }>`
+  flex-direction: row;
+  align-items: center;
+  margin-horizontal: 16px;
+  margin-vertical: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background-color: ${(props) => (props.isDark ? "#111827" : "#ffffff")};
+  border-width: 1px;
+  border-color: ${(props) => (props.isDark ? "#374151" : "#e5e7eb")};
+`;
+
+const Avatar = styled.Image`
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  margin-right: 12px;
+`;
+
+const Content = styled.View`
+  flex: 1;
+`;
+
+const Name = styled.Text<{ isDark: boolean }>`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${(props) => (props.isDark ? "#f3f4f6" : "#111827")};
+`;
+
+const Email = styled.Text<{ isDark: boolean }>`
+  font-size: 14px;
+  color: ${(props) => (props.isDark ? "#9ca3af" : "#6b7280")};
+`;
+
+const Chevron = styled.Text<{ isDark: boolean }>`
+  font-size: 18px;
+  color: ${(props) => (props.isDark ? "#2563eb" : "#3b82f6")};
+  margin-left: 8px;
+`;
 
 type Props = {
   user: User;
@@ -18,6 +52,7 @@ type Props = {
 export default function UserCard({ user, onPress }: Props) {
   const fade = useRef(new Animated.Value(0)).current;
   const effective = useThemeStore((s) => s.effective);
+  const isDark = effective === "dark";
 
   useEffect(() => {
     Animated.timing(fade, {
@@ -29,61 +64,23 @@ export default function UserCard({ user, onPress }: Props) {
 
   const avatarUri = `https://picsum.photos/seed/${user.id}/200`;
 
-  const styles = StyleSheet.create({
-    container: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginHorizontal: 16,
-      marginVertical: 8,
-      padding: 12,
-      borderRadius: 16,
-      backgroundColor: effective === "dark" ? "#111827" : "#ffffff",
-      borderWidth: 1,
-      borderColor: effective === "dark" ? "#374151" : "#e5e7eb",
-    },
-    avatar: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      marginRight: 12,
-    },
-    content: {
-      flex: 1,
-    },
-    name: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: effective === "dark" ? "#f3f4f6" : "#111827",
-    },
-    email: {
-      fontSize: 14,
-      color: effective === "dark" ? "#9ca3af" : "#6b7280",
-    },
-    chevron: {
-      fontSize: 18,
-      color: effective === "dark" ? "#2563eb" : "#3b82f6",
-      marginLeft: 8,
-    },
-  });
-
   return (
     <Animated.View style={{ opacity: fade }}>
-      <Pressable onPress={onPress} style={styles.container}>
-        <Image
+      <Container onPress={onPress} isDark={isDark}>
+        <Avatar
           source={{ uri: avatarUri }}
-          style={styles.avatar}
           accessibilityLabel={`${user.name} avatar`}
         />
-        <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1}>
+        <Content>
+          <Name isDark={isDark} numberOfLines={1}>
             {user.name}
-          </Text>
-          <Text style={styles.email} numberOfLines={1}>
+          </Name>
+          <Email isDark={isDark} numberOfLines={1}>
             {user.email}
-          </Text>
-        </View>
-        <Text style={styles.chevron}>›</Text>
-      </Pressable>
+          </Email>
+        </Content>
+        <Chevron isDark={isDark}>›</Chevron>
+      </Container>
     </Animated.View>
   );
 }

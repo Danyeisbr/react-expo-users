@@ -1,43 +1,41 @@
 import { useThemeStore } from "@store/themeStore";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import styled from "styled-components/native";
+
+const Container = styled.View`
+  padding: 24px;
+  align-items: center;
+`;
+
+const Message = styled.Text<{ isDark: boolean }>`
+  color: ${(props) => (props.isDark ? "#f87171" : "#dc2626")};
+  margin-bottom: 12px;
+  text-align: center;
+`;
+
+const Button = styled.Pressable<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? "#2563eb" : "#3b82f6")};
+  padding-horizontal: 16px;
+  padding-vertical: 8px;
+  border-radius: 12px;
+`;
+
+const ButtonText = styled.Text`
+  color: #ffffff;
+  font-weight: 500;
+`;
 
 type Props = { message?: string; onRetry: () => void };
 
 export default function RetryMessage({ message, onRetry }: Props) {
   const effective = useThemeStore((s) => s.effective);
-
-  const styles = StyleSheet.create({
-    container: {
-      padding: 24,
-      alignItems: "center",
-    },
-    message: {
-      color: effective === "dark" ? "#f87171" : "#dc2626",
-      marginBottom: 12,
-      textAlign: "center",
-    },
-    button: {
-      backgroundColor: effective === "dark" ? "#2563eb" : "#3b82f6",
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 12,
-    },
-    buttonText: {
-      color: "#ffffff",
-      fontWeight: "500",
-    },
-  });
+  const isDark = effective === "dark";
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.message}>{message ?? "Something went wrong."}</Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onRetry}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Retry</Text>
-      </Pressable>
-    </View>
+    <Container>
+      <Message isDark={isDark}>{message ?? "Something went wrong."}</Message>
+      <Button accessibilityRole="button" onPress={onRetry} isDark={isDark}>
+        <ButtonText>Retry</ButtonText>
+      </Button>
+    </Container>
   );
 }

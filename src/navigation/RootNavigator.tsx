@@ -1,14 +1,13 @@
-import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import UserDetailScreen from "@screens/UserDetailScreen";
+import UserListScreen from "@screens/UserListScreen";
+import { useThemeStore } from "@store/themeStore";
 import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
   Theme,
 } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import UserListScreen from "@screens/UserListScreen";
-import UserDetailScreen from "@screens/UserDetailScreen";
-import { useThemeStore } from "@store/themeStore";
 
 export type RootStackParamList = {
   Users: undefined;
