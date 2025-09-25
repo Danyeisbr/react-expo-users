@@ -1,11 +1,6 @@
-import type { User } from "../types";
+import { API_URLS, ENV } from "../config/environment";
+import type { User } from "../types/shared-types";
 
-const API_URL = "https://jsonplaceholder.typicode.com/users";
-const REQUEST_TIMEOUT = 10000;
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000;
-
-// Tipos de error personalizados
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -32,31 +27,28 @@ export class TimeoutError extends Error {
   }
 }
 
-// Función para crear timeout
 function createTimeout(ms: number): Promise<never> {
   return new Promise((_, reject) => {
     setTimeout(() => reject(new TimeoutError()), ms);
   });
 }
 
-// Función para delay con backoff exponencial
 function delay(ms: number, attempt: number): Promise<void> {
   const backoffDelay = ms * Math.pow(2, attempt - 1);
   return new Promise((resolve) => setTimeout(resolve, backoffDelay));
 }
 
-// Función principal con retry automático
 async function fetchWithRetry<T>(
   url: string,
   options: RequestInit = {},
-  maxRetries: number = MAX_RETRIES,
+  maxRetries: number = ENV.API_MAX_RETRIES,
   signal?: AbortSignal
 ): Promise<T> {
   let lastError: Error;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const timeoutPromise = createTimeout(REQUEST_TIMEOUT);
+      const timeoutPromise = createTimeout(ENV.API_TIMEOUT);
       const fetchPromise = fetch(url, {
         ...options,
         signal: signal,
@@ -69,7 +61,7 @@ async function fetchWithRetry<T>(
           `HTTP ${response.status}: ${response.statusText}`,
           response.status,
           response.status >= 500 ? "SERVER_ERROR" : "CLIENT_ERROR",
-          response.status >= 500 
+          response.status >= 500
         );
         throw error;
       }
@@ -91,7 +83,7 @@ async function fetchWithRetry<T>(
         break;
       }
 
-      await delay(RETRY_DELAY, attempt);
+      await delay(ENV.API_RETRY_DELAY, attempt);
     }
   }
 
@@ -101,14 +93,14 @@ async function fetchWithRetry<T>(
 export async function fetchUsers(signal?: AbortSignal): Promise<User[]> {
   try {
     return await fetchWithRetry<User[]>(
-      API_URL,
+      API_URLS.USERS,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       },
-      MAX_RETRIES,
+      ENV.API_MAX_RETRIES,
       signal
     );
   } catch (error) {
@@ -136,17 +128,15 @@ export async function fetchUsers(signal?: AbortSignal): Promise<User[]> {
   }
 }
 
-// Función para generar usuarios adicionales para simular paginación
 export async function fetchMoreUsers(
   page: number,
   pageSize: number,
   signal?: AbortSignal
 ): Promise<User[]> {
-  // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const startId = 10 + (page - 1) * pageSize + 1;
-  const maxUsers = 100;
+  const maxUsers = ENV.MAX_USERS;
   const maxId = 10 + maxUsers;
 
   if (startId > maxId) {
@@ -173,6 +163,10 @@ export async function fetchMoreUsers(
         suite: `Apt ${id}`,
         city: "New York",
         zipcode: "10001",
+        geo: {
+          lat: "40.7128",
+          lng: "-74.0060",
+        },
       },
       company: {
         name: `Company ${id}`,

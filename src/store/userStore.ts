@@ -1,34 +1,11 @@
 import { ApiError, fetchMoreUsers, fetchUsers } from "@services/api";
+import type { User, UserState } from "../types/shared-types";
 import { getCache, setCache } from "@utils/cache";
-import type { User } from "../types";
+import { ENV } from "../config/environment";
 import { create } from "zustand";
 
-type Status = "idle" | "loading" | "success" | "error";
-
-type UserState = {
-  users: User[];
-  status: Status;
-  error?: string | null;
-  errorCode?: string | null;
-  retryCount: number;
-  pageSize: number;
-  currentPage: number;
-  totalPages: number;
-  hasMore: boolean;
-  isLoadingMore: boolean;
-  query: string;
-  init: () => Promise<void>;
-  refresh: () => Promise<void>;
-  loadMore: () => Promise<void>;
-  setQuery: (q: string) => void;
-  visibleUsers: () => User[];
-  clear: () => void;
-  clearCache: () => Promise<void>;
-  retry: () => Promise<void>;
-};
-
 const CACHE_KEY = "users_cache_v1";
-const CACHE_TTL = 1000 * 30; // 30 segundos para testing
+const CACHE_TTL = ENV.CACHE_TTL;
 
 export const useUserStore = create<UserState>((set, get) => ({
   users: [],
@@ -36,7 +13,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   error: null,
   errorCode: null,
   retryCount: 0,
-  pageSize: 10,
+  pageSize: ENV.PAGE_SIZE,
   currentPage: 1,
   totalPages: 1,
   hasMore: true,
@@ -46,7 +23,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     if (get().status === "loading") return;
     set({ status: "loading", error: null, currentPage: 1, hasMore: true });
 
-    // Simular delay de carga inicial para mostrar skeleton loader
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const cached = await getCache<User[]>(CACHE_KEY, CACHE_TTL);
@@ -115,7 +91,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     if (!hasMore || isLoadingMore) return;
 
-    const maxUsers = 100;
+    const maxUsers = ENV.MAX_USERS;
     if (users.length >= maxUsers) {
       set({ hasMore: false, isLoadingMore: false });
       return;
@@ -194,7 +170,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     });
   },
   async clearCache() {
-    // Limpiar cache para probar errores
     await setCache(CACHE_KEY, null);
     set({
       users: [],
@@ -229,7 +204,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         users: data,
         status: "success",
         currentPage: Math.floor(data.length / pageSize),
-        retryCount: 0, // Reset retry count on success
+        retryCount: 0,
       });
     } catch (e: any) {
       const errorMessage =

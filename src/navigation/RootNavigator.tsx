@@ -1,18 +1,14 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import UserDetailScreen from "@screens/UserDetailScreen";
-import UserListScreen from "@screens/UserListScreen";
-import { useThemeStore } from "@store/themeStore";
 import {
-  NavigationContainer,
-  DefaultTheme,
   DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
   Theme,
 } from "@react-navigation/native";
-
-export type RootStackParamList = {
-  Users: undefined;
-  UserDetail: { id: number };
-};
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import UserDetailScreen from "@screens/UserDetailScreen/UserDetailScreen";
+import UserListScreen from "@screens/UserListScreen/UserListScreen";
+import { useThemeStore } from "@store/themeStore";
+import type { RootStackParamList } from "../types/shared-types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
