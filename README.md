@@ -1,7 +1,7 @@
-# 🚀 Prueba Técnica - Desarrollador React Native Semi-Senior
+# 🚀 Prueba Técnica - Desarrollador React Native Senior
 
 ## 📌 Descripción
-Bienvenido a la prueba técnica para el puesto de **Desarrollador React Native Semi-Senior**. En esta prueba, deberás desarrollar una aplicación móvil en **React Native** que consuma una API pública y muestre una lista de usuarios con detalles adicionales.
+Bienvenido a la prueba técnica para el puesto de **Desarrollador React Native Senior**. En esta prueba, deberás desarrollar una aplicación móvil en **React Native** que consuma una API pública y muestre una lista de usuarios con detalles adicionales.
 
 ---
 
